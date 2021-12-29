@@ -16,16 +16,19 @@ def parse_yamarket(filename):
     with open(filename, 'r', encoding='utf-8') as f:
         src = f.read()
     soup = BeautifulSoup(src, 'lxml')
+    name = soup.find('h1', class_='_1BWd_ _2OAAC undefined').text
     price = soup.find('div', class_='_3NaXx _3kWlK').find('span').text
-    return price
+    return name, price
 
 
 def parse_ozon(filename):
     with open(filename, 'r', encoding='utf-8') as f:
         src = f.read()
     soup = BeautifulSoup(src, 'lxml')
+    name = soup.find('h1', class_='e8j2').text
     price = soup.find('span', class_='c2h5 c2h6').text
-    return price
+    return name, price
 
-# get_page('https://www.ozon.ru/product/smartfon-xiaomi-redmi-note-10s-6-128gb-belyy-288651911/?sh=KUaJg78h', 'page.html')
-# print(parse_ozon('page.html'))
+
+get_page('https://www.ozon.ru/product/umnye-vesy-xiaomi-mi-smart-scale-2-155389000/?sh=4OW7TVn6', 'page.html')
+print(parse_ozon('page.html'))
