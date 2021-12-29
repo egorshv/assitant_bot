@@ -18,11 +18,31 @@ async def start(message: types.Message):
 @dp.message_handler(commands=['help'])
 async def help_(message: types.Message):
     await message.answer('Команды бота:\n'
-                         '/set_markets - настроить маркетплейсы, где отслеживается цена\n'
+                         '/set_markets - ? настроить маркетплейсы, где отслеживается цена\n'
                          '/add_item - добавить отслеживаемый товар\n'
                          '/remove_item - удалить товар из отслеживаемых\n'
                          '/show_items - просмотр всех отслеживаемых товаров\n'
                          '/show_details - ?\n')
+
+
+@dp.message_handler(commands=['set_markets'])
+async def set_markets(message: types.Message):
+    pass
+
+
+@dp.message_handler(commands=['add_item'])
+async def add_item(message: types.Message):
+    pass
+
+
+@dp.message_handler(commands=['remove_item'])
+async def remove_item(message: types.Message):
+    pass
+
+
+@dp.message_handler(commands=['show_items'])
+async def show_items(message: types.Message):
+    pass
 
 
 if __name__ == '__main__':

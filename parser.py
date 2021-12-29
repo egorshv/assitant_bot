@@ -41,6 +41,9 @@ def parse_citilink(filename):
     return name, price
 
 
-# get_page('https://www.citilink.ru/product/ssd-nakopitel-a-data-ultimate-su650-asu650ss-240gt-r-240gb-2-5-sata-ii-1091578/',
-#          'page.html')
-# print(parse_citilink('page.html'))
+# TODO: Add DNS parsing function
+
+
+get_page('',
+         'page.html')
+# print(parse_ozon('page.html'))
