@@ -30,5 +30,17 @@ def parse_ozon(filename):
     return name, price
 
 
-get_page('https://www.ozon.ru/product/umnye-vesy-xiaomi-mi-smart-scale-2-155389000/?sh=4OW7TVn6', 'page.html')
-print(parse_ozon('page.html'))
+def parse_citilink(filename):
+    with open(filename, 'r', encoding='utf-8') as f:
+        src = f.read()
+    soup = BeautifulSoup(src, 'lxml')
+    name = soup.find('h1', class_='Heading Heading_level_1 ProductHeader__title').text.strip().replace('\\n', '')
+    price = soup.find('span',
+                      class_='ProductHeader__price-default_current-price js--ProductHeader__price-default_current-price').text.strip().replace(
+        '\\n', '')
+    return name, price
+
+
+# get_page('https://www.citilink.ru/product/ssd-nakopitel-a-data-ultimate-su650-asu650ss-240gt-r-240gb-2-5-sata-ii-1091578/',
+#          'page.html')
+# print(parse_citilink('page.html'))
