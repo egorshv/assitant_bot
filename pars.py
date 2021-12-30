@@ -44,6 +44,6 @@ def parse_citilink(filename):
 # TODO: Add DNS parsing function
 
 
-get_page('',
-         'page.html')
-# print(parse_ozon('page.html'))
+# get_page('https://market.yandex.ru/product--nochnik-xiaomi-bedside-lamp-2-mjctd02yl-9-vt/424766114?cpc=eki6EO3ej__Rql8sUbbci0lVZziGAEb0CQGwbTVMsNofO7gao-ulrkRGQ60qUnrSQaKFK15JnkcLs02cYooHduPDfKa9qNyaRQECVw5xAEjwuJW866nmE2oNInBug2ryeI6IDoE20Gc3thQX16_U3DAxO75026vHoyzSVR42GCqEZTW3L9TslQ%2C%2C&sku=424766114&offerid=NjHtjOAlgkxSCVn8HFeIIQ&cpa=1',
+#          'page.html')
+# print(parse_yamarket('page.html'))
