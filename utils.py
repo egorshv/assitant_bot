@@ -8,4 +8,4 @@ class AddForm(StatesGroup):
 
 
 class RemoveForm(StatesGroup):
-    name = State()
+    id = State()
