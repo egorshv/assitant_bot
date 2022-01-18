@@ -60,9 +60,20 @@ class DbDispatcher:
         q = f"""SELECT MAX(id) FROM {table}"""
         return self.cur.execute(q).fetchone()
 
-    def delete_data(self, table):
-        q = f"""DELETE from {table}"""
+    def delete_data(self, d, table):
+        lst = []
+        for item in d.items():
+            try:
+                lst.append(f'{item[0]}={int(item[1])}')
+            except ValueError:
+                lst.append(f"{item[0]}='{item[1]}'")
+        s = ' AND '.join(lst)
+        if s:
+            q = f"""DELETE FROM {table} WHERE {s}"""
+        else:
+            q = f"""DELETE FROM {table}"""
         self.cur.execute(q)
+        self.con.commit()
 
     def close_connection(self):
         self.con.close()

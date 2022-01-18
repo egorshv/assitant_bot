@@ -20,7 +20,6 @@ services = DbDispatcher('services.db')
 prices = DbDispatcher('prices.db')
 YAMARKET = True
 OZON = True
-inline_kb1 = InlineKeyboardMarkup()
 
 
 @dp.message_handler(commands=['start'])
@@ -39,9 +38,9 @@ async def help_(message: types.Message):
                          '/show_details - ?\n')
 
 
-@dp.message_handler(commands=['set_markets'])
-async def set_markets(message: types.Message):
-    pass
+# @dp.message_handler(commands=['set_markets'])
+# async def set_markets(message: types.Message):
+#     pass
 
 
 @dp.message_handler(commands=['add_item'])
@@ -58,10 +57,14 @@ async def remove_item(message: types.Message):
 
 
 @dp.message_handler(state=RemoveForm.id)
-async def removing_by_id(message: types.Message):
+async def removing_by_id(message: types.Message, state: FSMContext):
     try:
         _id = int(message.text)
-        await message.answer('Все работает')
+        items.delete_data({'id': _id}, 'items')
+        services.delete_data({'item_id': _id}, 'services')
+        prices.delete_data({'item_id': _id, }, 'prices')
+        await message.answer('Товар успешно удалён')
+        await state.finish()
     except ValueError:
         await RemoveForm.id.set()
         await message.answer('Некорректный id, попробуйте ещё раз')
@@ -70,9 +73,10 @@ async def removing_by_id(message: types.Message):
 @dp.message_handler(commands=['show_items'])
 async def show_items(message: types.Message):
     itms = items.select_data({}, 'items', columns=['name'])
+    inline_kb1 = InlineKeyboardMarkup()
     s = ''
     for i in range(len(itms)):
-        s += f'{itms[i][0]} ({i + 1})\n'
+        s += f'{itms[i][0]} ({i + 1})\n\n'
         btn = InlineKeyboardButton(itms[i][0], callback_data=f'btn_{i}')
         inline_kb1.add(btn)
     await message.answer(s, reply_markup=inline_kb1)
