@@ -85,35 +85,43 @@ async def show_items(message: types.Message):
 
 @dp.message_handler(state=AddForm.href_yamarket)
 async def ya_href(message: types.Message):
-    global YAMARKET
+    global YAMARKET  # Флаг для записи в бд
     href_yamarket = message.text
-    corr_url = True
+    corr_url = True  # Проверка валидности ссылки
     try:
         get_page(href_yamarket, 'yamarket.html')
-    except Exception:
+    except Exception as e:
         corr_url = False
-    if href_yamarket.lower() != 'none' and not corr_url:
-        name, price = parse_yamarket('yamarket.html')
-        price = int(price[:-2])
-        items.write_data({'name': name}, 'items')
-        item_id = items.get_max_id('items')[0]
-        services.write_data({'item_id': item_id, 'href': href_yamarket}, 'services')
-        serv_id = services.get_max_id('services')[0]
-        curr_price = prices.select_data({'item_id': item_id, 'serv_id': serv_id}, 'prices', ['price'])
-        try:
-            if curr_price != price:
+    if href_yamarket.lower() == 'none':
+        YAMARKET = False
+        await AddForm.href_ozon.set()
+        await message.answer(
+            'Введите ссылку на товар на озоне (или None, если отслеживание на этом маркетплейсе не нужно)')
+    elif not corr_url:
+        await AddForm.href_yamarket.set()
+        await message.answer('Некорректная ссылка, попробуйте снова')
+    else:
+        try:  # try нужен, чтобы проверить, удается ли спарсить страницу
+            name, price = parse_yamarket('yamarket.html')
+            price = int(price[:-2])
+            items.write_data({'name': name}, 'items')
+            item_id = items.get_max_id('items')[0]
+            services.write_data({'item_id': item_id, 'href': href_yamarket}, 'services')
+            serv_id = services.get_max_id('services')[0]
+            curr_price = prices.select_data({'item_id': item_id, 'serv_id': serv_id}, 'prices', ['price'])
+            if int(curr_price) != price:  # Если текущая цена равна предыдущей, то нет смысла записывать
                 prices.write_data(
                     {'item_id': item_id, 'serv_id': serv_id, 'date': datetime.today().strftime('%Y-%m-%d'),
                      'price': price},
                     'prices')
-        except TypeError:
-            prices.write_data(
-                {'item_id': item_id, 'serv_id': serv_id, 'date': datetime.today().strftime('%Y-%m-%d'), 'price': price},
-                'prices')
-    else:
-        YAMARKET = False
-    await AddForm.href_ozon.set()
-    await message.answer('Введите ссылку на товар на озоне (или None, если отслеживание на этом маркетплейсе не нужно)')
+
+        except Exception as e:
+            YAMARKET = False
+            await message.answer('Сейчас не получается получить доступ к этой странице')
+
+        await AddForm.href_ozon.set()
+        await message.answer(
+            'Введите ссылку на товар на озоне (или None, если отслеживание на этом маркетплейсе не нужно)')
 
 
 @dp.message_handler(state=AddForm.href_ozon)
@@ -151,27 +159,35 @@ async def ozon_href(message: types.Message):
 async def citilink_href(message: types.Message, state: FSMContext):
     global YAMARKET, OZON
     href_citilink = message.text
-    if href_citilink.lower() != 'none':
+    corr_url = True
+    try:
         get_page(href_citilink, 'citilink.html')
-        name, price = parse_citilink('citilink.html')
-        if not YAMARKET and not OZON:
-            items.write_data({'name': name}, 'items')
-        item_id = items.get_max_id('items')[0]
-        services.write_data({'item_id': item_id, 'href': href_citilink}, 'services')
-        serv_id = services.get_max_id('services')[0]
-        curr_price = prices.select_data({'item_id': item_id, 'serv_id': serv_id}, 'prices', ['price'])
+    except Exception as e:
+        corr_url = False
+    if href_citilink.lower() == 'none':
+        await message.answer('Товар успешно добавлен в отслеживаемые!')
+        await state.finish()
+    elif not corr_url:
+        await AddForm.href_citilink.set()
+        await message.answer('Некорректная ссылка, попробуйте снова')
+    else:
         try:
-            if curr_price != price:
+            name, price = parse_citilink('citilink.html')
+            if not YAMARKET and not OZON:
+                items.write_data({'name': name}, 'items')
+            item_id = items.get_max_id('items')[0]
+            services.write_data({'item_id': item_id, 'href': href_citilink}, 'services')
+            serv_id = services.get_max_id('services')[0]
+            curr_price = prices.select_data({'item_id': item_id, 'serv_id': serv_id}, 'prices', ['price'])
+            if int(curr_price) != price:
                 prices.write_data(
                     {'item_id': item_id, 'serv_id': serv_id, 'date': datetime.today().strftime('%Y-%m-%d'),
                      'price': price},
                     'prices')
-        except TypeError:
-            prices.write_data(
-                {'item_id': item_id, 'serv_id': serv_id, 'date': datetime.today().strftime('%Y-%m-%d'), 'price': price},
-                'prices')
-    await message.answer('Товар успешно добавлен в отслеживаемые!')
-    await state.finish()
+        except Exception as e:
+            await message.answer('Сейчас не получается получить доступ к этой странице')
+        await message.answer('Товар успешно добавлен в отслеживаемые!')
+        await state.finish()
 
 
 async def shutdown(dispatcher: Dispatcher):
