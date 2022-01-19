@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
 
 
-def create_plot(dates, prices, filename):
+def create_plot(dates, prices, filename, title):
     plt.ylabel('price')
     plt.xlabel('date')
     plt.figure(figsize=(len(dates) + 2, len(prices)))
+    plt.title(title)
     plt.plot(dates, prices)
     plt.savefig(filename)
 

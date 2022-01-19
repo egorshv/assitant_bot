@@ -7,9 +7,10 @@ from config import TOKEN
 from utils import AddForm, RemoveForm
 from pars import get_page, parse_ozon, parse_citilink, parse_yamarket
 from aiogram.dispatcher import FSMContext
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputFile
 
 from db import DbDispatcher
+from get_plt import create_plot
 
 logging.basicConfig(level=logging.INFO)
 
@@ -82,10 +83,24 @@ async def show_items(message: types.Message):
     await message.answer(s, reply_markup=inline_kb1)
 
 
-@dp.callback_query_handler(lambda c: c.data == 'btn_1')
-async def callback_data_btn0(callback_query: types.CallbackQuery):
+@dp.callback_query_handler(lambda c: 'btn' in c.data)
+async def callback_data_btn(callback_query: types.CallbackQuery):
+    id = int(callback_query.data[-1])
+    arr = prices.select_data({'item_id': id}, 'prices')
+    title = items.select_data({'id': id}, 'items', columns=['name'])[0][0]
+    file_name = f'item{id}.png'
+    pr = []
+    dates = []
+    for item in arr:
+        pr.append(item[0])
+        dates.append(item[1])
     await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(callback_query.from_user.id, 'something')
+    if len(dates) > 2:
+        create_plot(dates, pr, file_name, title)
+        file = InputFile(file_name)
+        await bot.send_photo(callback_query.from_user.id, file)
+    else:
+        await bot.send_message(callback_query.from_user.id, 'Не хватает данных для построения графика')
 
 
 @dp.message_handler(state=AddForm.href_yamarket)
@@ -193,6 +208,11 @@ async def citilink_href(message: types.Message, state: FSMContext):
             await message.answer('Сейчас не получается получить доступ к этой странице')
         await message.answer('Товар успешно добавлен в отслеживаемые!')
         await state.finish()
+
+
+@dp.message_handler()
+async def wrong_message(message: types.Message):
+    await message.answer('Команда не распознана.\nДля просмотра команд используйте /help')
 
 
 async def shutdown(dispatcher: Dispatcher):
