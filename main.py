@@ -77,14 +77,15 @@ async def show_items(message: types.Message):
     s = ''
     for i in range(len(itms)):
         s += f'{itms[i][0]} ({i + 1})\n\n'
-        btn = InlineKeyboardButton(itms[i][0], callback_data=f'btn_{i}')
+        btn = InlineKeyboardButton(itms[i][0], callback_data=f'btn_{i + 1}')
         inline_kb1.add(btn)
     await message.answer(s, reply_markup=inline_kb1)
 
 
-# @dp.callback_query_handler(func=lambda c: c.data == 'btn_0')
-# async def callback_data_btn0(callback_query: types.CallbackQuery):
-#     pass
+@dp.callback_query_handler(lambda c: c.data == 'btn_1')
+async def callback_data_btn0(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(callback_query.from_user.id, 'something')
 
 
 @dp.message_handler(state=AddForm.href_yamarket)
